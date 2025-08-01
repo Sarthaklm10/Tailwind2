@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const taskRoutes = require("./routes/taskRoutes");
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/authRoutes");
 const path = require("path");
 
 const PORT = process.env.PORT || 3000;

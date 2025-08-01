@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Task = require("../models/task");
+const authMiddleware = require("../middleware/auth");
 
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const tasks = await Task.find({});
     res.json(tasks);
@@ -14,7 +15,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async function (req, res) {
+router.post("/", authMiddleware, async function (req, res) {
   try {
     const task = new Task(req.body);
     const savedTask = await task.save();
@@ -30,7 +31,7 @@ router.post("/", async function (req, res) {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Not found" });
@@ -47,7 +48,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedElt = await Task.findById(id);
