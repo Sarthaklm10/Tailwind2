@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/auth");
 
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const tasks = await Task.find({});
+    const tasks = await Task.find({ user: req.userId });
     res.json(tasks);
   } catch (err) {
     console.error(err.message);
@@ -17,7 +17,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.post("/", authMiddleware, async function (req, res) {
   try {
-    const task = new Task(req.body);
+    const task = new Task({ title: req.body.title, user: req.userId });
     const savedTask = await task.save();
     res.status(201).json({
       message: "Task added successfully",
@@ -36,6 +36,9 @@ router.patch("/:id", authMiddleware, async (req, res) => {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Not found" });
 
+    if (task.user.toString() !== req.userId)
+      return res.status(403).json({ message: "Unauthorized" });
+
     if (typeof req.body.completed === "boolean")
       task.completed = req.body.completed;
     if (typeof req.body.title === "string") task.title = req.body.title;
@@ -51,9 +54,13 @@ router.patch("/:id", authMiddleware, async (req, res) => {
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const deletedElt = await Task.findById(id);
-    console.log("Element deleted is", deletedElt.title);
+    const task = await Task.findById(id);
+    if (req.userId !== task.user.toString())
+      return res.status(403).json({ message: "Unauthorized" });
+
+    console.log("Task deleted is", task.title);
     await Task.findByIdAndDelete(id);
+
     res.status(200).json({
       message: "Deleted successfully",
     });
